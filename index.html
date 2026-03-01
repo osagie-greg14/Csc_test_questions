@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICT UNIBEN Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+body{
+    font-family:'Poppins',sans-serif;
+    margin:0;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+}
+.container{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    padding:25px;
+    width:95%;
+    max-width:500px;
+    border-radius:15px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    animation:fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+h2{text-align:center;margin-bottom:15px;}
+button{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:none;
+    border-radius:8px;
+    background:#00c6ff;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover{background:#0072ff;}
+input{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    margin-bottom:10px;
+}
+#timer{text-align:center;font-weight:600;margin-bottom:10px;}
+#wrongList{
+    max-height:200px;
+    overflow-y:auto;
+    padding-right:5px;
+}
+#wrongList::-webkit-scrollbar{width:5px;}
+#wrongList::-webkit-scrollbar-thumb{background:#00c6ff;border-radius:5px;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="container" id="startScreen">
+<h2>UNIBEN ICT Quiz</h2>
+<input type="text" id="studentName" placeholder="Enter your name">
+<button onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<div class="container hidden" id="quizScreen">
+<div id="timer">Time: 180s</div>
+<h3 id="question"></h3>
+<div id="options"></div>
+</div>
+
+<div class="container hidden" id="resultScreen">
+<h2 id="finalScore"></h2>
+<div id="wrongList"></div>
+<button onclick="location.reload()">Restart</button>
+</div>
+
+<script>
+const quiz=[
+{q:"What does ICT stand for?",o:["Information & Communication Technology","Internet Computer Tech","Internal Control Tech","Integrated Circuit Tool"],a:0},
+{q:"HTML is used to?",o:["Structure Web Pages","Style Websites","Store Data","Create Servers"],a:0},
+{q:"CSS is mainly for?",o:["Design & Styling","Programming Logic","Database","Security"],a:0},
+{q:"CPU means?",o:["Central Processing Unit","Computer Personal Unit","Central Program Utility","Control Processing User"],a:0},
+{q:"RAM is?",o:["Temporary Memory","Permanent Storage","CPU","Operating System"],a:0},
+{q:"Binary numbers use?",o:["0 and 1","1-9","A-Z","Hex digits"],a:0},
+{q:"UNIBEN means?",o:["University of Benin","United Benin College","University of Benue","Union Benin Institute"],a:0},
+{q:"IP stands for?",o:["Internet Protocol","Internal Program","Internet Process","Input Port"],a:0},
+{q:"HTTP is?",o:["Web Communication Protocol","Programming Language","Database","Operating System"],a:0},
+{q:"Which is an OS?",o:["Windows","Chrome","Google","Intel"],a:0},
+{q:"Database stores?",o:["Data","Images only","Videos only","Apps"],a:0},
+{q:"LAN means?",o:["Local Area Network","Large Area Net","Long Access Node","Line Area Network"],a:0},
+{q:"Cloud computing means?",o:["Internet-based computing","Weather Tech","Hard Drive","CPU Upgrade"],a:0},
+{q:"Firewall protects?",o:["Network","Keyboard","Mouse","Monitor"],a:0},
+{q:"Algorithm is?",o:["Step-by-step solution","Computer virus","Hardware","Network cable"],a:0},
+{q:"Python is?",o:["Programming Language","Snake only","OS","Browser"],a:0},
+{q:"URL stands for?",o:["Uniform Resource Locator","Universal Link","User Remote Link","Unique Resource Line"],a:0},
+{q:"SSD is?",o:["Storage Device","Software","Network","RAM type"],a:0},
+{q:"Bandwidth measures?",o:["Data Speed","Screen Size","Memory","Voltage"],a:0},
+{q:"Compiler does?",o:["Translate code","Store files","Browse web","Print files"],a:0},
+{q:"WiFi is?",o:["Wireless Internet","Cable Net","CPU","App"],a:0},
+{q:"Encryption secures?",o:["Data","Screen","Keyboard","Mouse"],a:0},
+{q:"HTML tag for link?",o:["<a>","<div>","<p>","<img>"],a:0},
+{q:"Gigabyte is?",o:["Data Size","Speed","Voltage","Resolution"],a:0},
+{q:"ICT students study?",o:["Technology","Agriculture","Medicine","Law"],a:0}
+];
+
+let current=0,score=0,time=180,student="",wrongAnswers=[];
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const timerEl=document.getElementById("timer");
+
+function startQuiz(){
+student=document.getElementById("studentName").value.trim();
+if(student===""){alert("Enter your name first");return;}
+document.getElementById("startScreen").classList.add("hidden");
+document.getElementById("quizScreen").classList.remove("hidden");
+loadQuestion();
+startTimer();
+}
+
+function loadQuestion(){
+if(current>=15){endQuiz();return;}
+let q=quiz[current];
+questionEl.textContent=(current+1)+". "+q.q;
+optionsEl.innerHTML="";
+q.o.forEach((opt,i)=>{
+let btn=document.createElement("button");
+btn.textContent=opt;
+btn.onclick=()=>checkAnswer(i);
+optionsEl.appendChild(btn);
+});
+}
+
+function checkAnswer(i){
+if(i===quiz[current].a){score++;}
+else{
+wrongAnswers.push("Q"+(current+1)+": "+quiz[current].q+" | Correct: "+quiz[current].o[quiz[current].a]);
+}
+current++;
+loadQuestion();
+}
+
+function startTimer(){
+let interval=setInterval(()=>{
+time--;
+timerEl.textContent="Time: "+time+"s";
+if(time<=0){clearInterval(interval);endQuiz();}
+},1000);
+}
+
+function endQuiz(){
+document.getElementById("quizScreen").classList.add("hidden");
+document.getElementById("resultScreen").classList.remove("hidden");
+document.getElementById("finalScore").textContent=student+", you scored "+score+"/15";
+let list=document.getElementById("wrongList");
+list.innerHTML="";
+if(wrongAnswers.length===0){
+list.innerHTML="<p>Perfect score! 🔥</p>";
+confetti({particleCount:200,spread:100});
+}else{
+wrongAnswers.forEach(w=>{
+let p=document.createElement("p");
+p.textContent=w;
+list.appendChild(p);
+});
+if(score>=10){
+confetti({particleCount:200,spread:100});
+}
+}
+}
+</script>
+
+</body>
+</html>
